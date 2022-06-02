@@ -12,22 +12,27 @@ import (
 	"path/filepath"
 	"syscall"
 
+	"github.com/refraction-networking/gotapdance/tapdance"
+
 	pt "git.torproject.org/pluggable-transports/goptlib.git"
 	"git.torproject.org/pluggable-transports/snowflake.git/common/safelog"
 )
 
 type ConjureConfig struct {
-	assetDir string
+	assetDir    string
+	registerURL string //URL of the conjure bidirectional registration API endpoint
+	front       string
 }
 
 // Get SOCKS arguments and populate config
 func getSOCKSArgs(conn net.Conn, config *ConjureConfig) {
+	return
 
 }
 
 // handle the SOCKS conn
-func handler(conn net.Conn, config *ConjureConfig) {
-
+func handler(conn net.Conn, config *ConjureConfig) error {
+	return handle(conn, config)
 }
 
 //TODO: pass in shutdown channel?
@@ -45,7 +50,12 @@ func acceptLoop(ln *pt.SocksListener, config *ConjureConfig) error {
 		}
 		log.Printf("SOCKS accepted: %v", conn.Req)
 		getSOCKSArgs(conn, config)
-		go handler(conn, config)
+		go func() {
+			err := handler(conn, config)
+			if err != nil {
+				log.Println(err)
+			}
+		}()
 	}
 	return nil
 }
@@ -56,6 +66,9 @@ func main() {
 	logToStateDir := flag.Bool("log-to-state-dir", false,
 		"resolve the log file relative to tor's pt state dir")
 	unsafeLogging := flag.Bool("unsafe-logging", false, "prevent logs from being scrubbed")
+	front := flag.String("front", "", "domain front")
+	registerURL := flag.String("registerURL", "", "URL of the conjure registration station")
+
 	flag.Parse()
 
 	// Set up logging
@@ -82,9 +95,14 @@ func main() {
 	log.SetFlags(log.LstdFlags | log.LUTC)
 	log.SetOutput(logFile)
 
+	tapdance.SetLoggerOutput(logFile)
+	tapdance.Logger().Warnf("Redirecting log to file")
+
 	// Configure Conjure
 	config := &ConjureConfig{
-		assetDir: *assetDir,
+		assetDir:    *assetDir,
+		registerURL: *registerURL,
+		front:       *front,
 	}
 
 	// Tor client-side transport setup
