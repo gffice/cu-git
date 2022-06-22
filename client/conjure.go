@@ -32,6 +32,7 @@ func getSOCKSArgs(conn net.Conn, config *ConjureConfig) {
 
 // handle the SOCKS conn
 func handler(conn net.Conn, config *ConjureConfig) error {
+
 	return handle(conn, config)
 }
 
@@ -50,6 +51,11 @@ func acceptLoop(ln *pt.SocksListener, config *ConjureConfig) error {
 		}
 		log.Printf("SOCKS accepted: %v", conn.Req)
 		getSOCKSArgs(conn, config)
+		err = conn.Grant(&net.TCPAddr{IP: net.IPv4zero, Port: 0})
+		if err != nil {
+			log.Printf("conn.Grant error: %s", err)
+			return err
+		}
 		go func() {
 			err := handler(conn, config)
 			if err != nil {
