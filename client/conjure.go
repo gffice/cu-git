@@ -2,6 +2,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"io"
 	"io/ioutil"
@@ -10,6 +11,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"sync"
 	"syscall"
 
 	"github.com/refraction-networking/gotapdance/tapdance"
@@ -19,9 +21,10 @@ import (
 )
 
 type ConjureConfig struct {
-	assetDir    string
-	registerURL string //URL of the conjure bidirectional registration API endpoint
-	front       string
+	assetDir      string
+	registerURL   string // URL of the conjure bidirectional registration API endpoint
+	front         string
+	bridgeAddress string // IP address of the Tor Conjure PT bridge
 }
 
 // Get SOCKS arguments and populate config
@@ -31,9 +34,28 @@ func getSOCKSArgs(conn net.Conn, config *ConjureConfig) {
 }
 
 // handle the SOCKS conn
-func handler(conn net.Conn, config *ConjureConfig) error {
+func handler(conn *pt.SocksConn, config *ConjureConfig) error {
 
-	return handle(conn, config)
+	bridgeAddr, err := net.ResolveTCPAddr("tcp", conn.Req.Target)
+	if err != nil {
+		conn.Reject()
+		return err
+	}
+	config.bridgeAddress = conn.Req.Target
+	log.Printf("Attempting to connect to bridge at %s", conn.Req.Target)
+	phantomConn, err := register(config)
+	if err != nil {
+		conn.Reject()
+		return err
+	}
+	log.Printf("Connected to bridge at %s", conn.Req.Target)
+	err = conn.Grant(bridgeAddr)
+	if err != nil {
+		return err
+	}
+	proxy(conn, phantomConn)
+	log.Println("Closed connection to phantom proxy")
+	return nil
 }
 
 //TODO: pass in shutdown channel?
@@ -51,11 +73,6 @@ func acceptLoop(ln *pt.SocksListener, config *ConjureConfig) error {
 		}
 		log.Printf("SOCKS accepted: %v", conn.Req)
 		getSOCKSArgs(conn, config)
-		err = conn.Grant(&net.TCPAddr{IP: net.IPv4zero, Port: 0})
-		if err != nil {
-			log.Printf("conn.Grant error: %s", err)
-			return err
-		}
 		go func() {
 			err := handler(conn, config)
 			if err != nil {
@@ -64,6 +81,28 @@ func acceptLoop(ln *pt.SocksListener, config *ConjureConfig) error {
 		}()
 	}
 	return nil
+}
+
+func proxy(socks net.Conn, phantom net.Conn) {
+	var wg sync.WaitGroup
+	wg.Add(2)
+	go func() {
+		if _, err := io.Copy(socks, phantom); err != nil && !errors.Is(err, io.ErrClosedPipe) {
+			log.Printf("Error copying SOCKS to phantom %v", err)
+		}
+		socks.Close()
+		phantom.Close()
+		wg.Done()
+	}()
+	go func() {
+		if _, err := io.Copy(phantom, socks); err != nil && !errors.Is(err, io.ErrClosedPipe) {
+			log.Printf("Error copying phantom to SOCKS %v", err)
+		}
+		socks.Close()
+		phantom.Close()
+		wg.Done()
+	}()
+	wg.Wait()
 }
 
 func main() {

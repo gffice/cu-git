@@ -2,12 +2,9 @@ package main
 
 import (
 	"context"
-	"errors"
-	"io"
 	"log"
 	"net"
 	"net/http"
-	"sync"
 	"time"
 
 	proto "github.com/refraction-networking/gotapdance/protobuf"
@@ -34,32 +31,7 @@ func (r *Rendezvous) RoundTrip(req *http.Request) (*http.Response, error) {
 	return r.transport.RoundTrip(req)
 }
 
-func proxy(socks net.Conn, phantom net.Conn) {
-	var wg sync.WaitGroup
-	wg.Add(2)
-	go func() {
-		if _, err := io.Copy(socks, phantom); err != nil && !errors.Is(err, io.ErrClosedPipe) {
-			log.Printf("Error copying SOCKS to phantom %v", err)
-		}
-		socks.Close()
-		phantom.Close()
-		wg.Done()
-	}()
-	go func() {
-		if _, err := io.Copy(phantom, socks); err != nil && !errors.Is(err, io.ErrClosedPipe) {
-			log.Printf("Error copying phantom to SOCKS %v", err)
-		}
-		socks.Close()
-		phantom.Close()
-		wg.Done()
-	}()
-	wg.Wait()
-}
-
-func handle(conn net.Conn, config *ConjureConfig) error {
-
-	ctx, cancelFunc := context.WithCancel(context.Background())
-	defer cancelFunc()
+func register(config *ConjureConfig) (net.Conn, error) {
 
 	dialer := &tapdance.Dialer{
 		// Use conjure to connect to phantom addresses, not vanilla tapdance
@@ -122,16 +94,12 @@ func handle(conn net.Conn, config *ConjureConfig) error {
 	// Make a connection to the bridge through the phantom
 	// This will register the client, obtaining a phantom address and connect
 	// to that phantom address all in one go
-	phantomConn, err := dialer.DialContext(ctx, "tcp", "192.168.122.3:8888")
+	phantomConn, err := dialer.DialContext(context.Background(), "tcp", config.bridgeAddress)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	defer phantomConn.Close()
 
 	log.Println("Successfully connected to phantom proxy!")
 
-	proxy(conn, phantomConn)
-	log.Println("Closed connection to phantom proxy")
-
-	return nil
+	return phantomConn, nil
 }
