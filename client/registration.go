@@ -36,17 +36,13 @@ func register(config *ConjureConfig) (net.Conn, error) {
 	dialer := &tapdance.Dialer{
 		// Use conjure to connect to phantom addresses, not vanilla tapdance
 		DarkDecoy: true,
-		//TODO: what is this?
-		SplitFlows: false,
-		//TODO: what is this?
-		// Apparently psiphon for android needs it but i'm not sure why yet
-		TcpDialer: nil,
 		// If true, the station sends PROXY header in the connection from the
 		// station to the conjure bridge that includes the client's IP address
 		UseProxyHeader: true,
 		// For MVP, we don't (yet) support v6 phantoms
 		V6Support: false,
-		//TODO: double check this
+		// Width is specific to the decoy routing registrat, at the moment we're using
+		// only the bidirectional registrar
 		Width: 0,
 	}
 

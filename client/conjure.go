@@ -58,7 +58,6 @@ func handler(conn *pt.SocksConn, config *ConjureConfig) error {
 	return nil
 }
 
-//TODO: pass in shutdown channel?
 func acceptLoop(ln *pt.SocksListener, config *ConjureConfig) error {
 	defer ln.Close()
 
