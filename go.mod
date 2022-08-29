@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	git.torproject.org/pluggable-transports/goptlib.git v1.2.0
-	git.torproject.org/pluggable-transports/snowflake.git v1.1.0
+	git.torproject.org/pluggable-transports/snowflake.git/v2 v2.2.0
 	github.com/pires/go-proxyproto v0.6.2
 	github.com/refraction-networking/gotapdance v1.3.0
 )
@@ -19,7 +19,7 @@ require (
 	github.com/sirupsen/logrus v1.8.1 // indirect
 	gitlab.com/yawning/edwards25519-extra.git v0.0.0-20211229043746-2f91fcc9fbdb // indirect
 	gitlab.com/yawning/obfs4.git v0.0.0-20220204003609-77af0cba934d // indirect
-	golang.org/x/crypto v0.0.0-20220411220226-7b82a4e95df4 // indirect
+	golang.org/x/crypto v0.0.0-20220516162934-403b01795ae8 // indirect
 	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
 )

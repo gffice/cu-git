@@ -17,7 +17,7 @@ import (
 	"github.com/refraction-networking/gotapdance/tapdance"
 
 	pt "git.torproject.org/pluggable-transports/goptlib.git"
-	"git.torproject.org/pluggable-transports/snowflake.git/common/safelog"
+	"git.torproject.org/pluggable-transports/snowflake.git/v2/common/safelog"
 )
 
 type ConjureConfig struct {
