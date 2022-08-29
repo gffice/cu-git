@@ -103,7 +103,7 @@ func main() {
 	allowedStations := strings.Split(allowedStationsCommas, ",")
 
 	//TODO: if allowed stations are empty, don't set policy?
-	policy, err := pp.LaxWhiteListPolicy(allowedStations)
+	policy, err := pp.StrictWhiteListPolicy(allowedStations)
 	if err != nil {
 		log.Fatalf("Error setting haproxy policy: %s", err.Error())
 	}
