@@ -45,6 +45,8 @@ func handler(conn *pt.SocksConn, config *ConjureConfig) error {
 	log.Printf("Attempting to connect to bridge at %s", conn.Req.Target)
 	phantomConn, err := register(config)
 	if err != nil {
+		pt.Log(pt.LogSeverityWarning,
+			"Failed to register phantom proxy. This could be due to high load at the station.")
 		conn.Reject()
 		return err
 	}

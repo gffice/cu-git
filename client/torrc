@@ -1,7 +1,7 @@
 UseBridges 1
 DataDirectory datadir
 
-ClientTransportPlugin conjure exec ./client -log conjure.log -registerURL https://registration.refraction.network/api
+ClientTransportPlugin conjure exec ./client -log conjure.log -unsafe-logging -registerURL https://registration.refraction.network/api
 
 Bridge conjure 143.110.214.222:80
 
