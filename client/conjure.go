@@ -21,7 +21,6 @@ import (
 )
 
 type ConjureConfig struct {
-	assetDir      string
 	registerURL   string // URL of the conjure bidirectional registration API endpoint
 	front         string
 	bridgeAddress string // IP address of the Tor Conjure PT bridge
@@ -107,7 +106,7 @@ func proxy(socks net.Conn, phantom net.Conn) {
 }
 
 func main() {
-	assetDir := flag.String("assets", "", "assetDir")
+	assetDir := flag.String("assets", "", "asset directory for conjure configs")
 	logFilename := flag.String("log", "", "name of the log file")
 	logToStateDir := flag.Bool("log-to-state-dir", false,
 		"resolve the log file relative to tor's pt state dir")
@@ -117,15 +116,23 @@ func main() {
 
 	flag.Parse()
 
+	stateDir, err := pt.MakeStateDir()
+	if err != nil {
+		log.Fatal(err)
+	}
+	if *assetDir == "" {
+		*assetDir = stateDir + "/conjure"
+		err := os.Mkdir(*assetDir, 0755)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+	tapdance.AssetsSetDir(*assetDir)
 	// Set up logging
 	var logFile io.Writer
 	logFile = ioutil.Discard
 	if *logFilename != "" {
 		if *logToStateDir {
-			stateDir, err := pt.MakeStateDir()
-			if err != nil {
-				log.Fatal(err)
-			}
 			*logFilename = filepath.Join(stateDir, *logFilename)
 		}
 		f, err := os.OpenFile(*logFilename, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0600)
@@ -146,7 +153,6 @@ func main() {
 
 	// Configure Conjure
 	config := &ConjureConfig{
-		assetDir:    *assetDir,
 		registerURL: *registerURL,
 		front:       *front,
 	}
