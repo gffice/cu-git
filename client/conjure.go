@@ -144,14 +144,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	if *assetDir == "" {
-		*assetDir = stateDir + "/conjure"
-		err := os.Mkdir(*assetDir, 0755)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-	tapdance.AssetsSetDir(*assetDir)
+
 	// Set up logging
 	var logFile io.Writer
 	logFile = ioutil.Discard
@@ -172,6 +165,14 @@ func main() {
 	log.SetFlags(log.LstdFlags | log.LUTC)
 	log.SetOutput(logFile)
 
+	if *assetDir == "" {
+		*assetDir = stateDir + "/conjure"
+		err := os.Mkdir(*assetDir, 0755)
+		if err != nil && !os.IsExist(err) {
+			log.Fatal(err)
+		}
+	}
+	tapdance.AssetsSetDir(*assetDir)
 	tapdance.SetLoggerOutput(logFile)
 	tapdance.Logger().Warnf("Redirecting log to file")
 
