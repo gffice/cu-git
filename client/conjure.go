@@ -57,18 +57,18 @@ func handler(conn *pt.SocksConn, config *ConjureConfig) error {
 
 	go func() {
 		for {
+			phantomConn, err := register(config)
+			if err == nil {
+				log.Printf("Connected to bridge at %s", conn.Req.Target)
+				if err := buffConn.SetConn(phantomConn); err != nil {
+					log.Printf("Error setting internal conn: %s", err.Error())
+				}
+				return
+			}
+			log.Printf("Error registering with station: %s", err.Error())
+			log.Printf("This may be due to high load, trying again.")
 			select {
 			case <-time.After(RetryInterval):
-				phantomConn, err := register(config)
-				if err == nil {
-					log.Printf("Connected to bridge at %s", conn.Req.Target)
-					if err := buffConn.SetConn(phantomConn); err != nil {
-						log.Printf("Error setting internal conn: %s", err.Error())
-					}
-					return
-				}
-				log.Printf("Error registering with station: %s", err.Error())
-				log.Printf("This may be due to high load, trying again.")
 				continue
 			case <-shutdown:
 				log.Println("Registration loop stopped")
