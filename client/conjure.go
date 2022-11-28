@@ -67,6 +67,8 @@ func handler(conn *pt.SocksConn, config *ConjureConfig) error {
 			}
 			log.Printf("Error registering with station: %s", err.Error())
 			log.Printf("This may be due to high load, trying again.")
+			pt.Log(pt.LogSeverityNotice,
+				"retrying conjure registration, station is under high load.")
 			select {
 			case <-time.After(RetryInterval):
 				continue
