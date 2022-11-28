@@ -13,12 +13,15 @@ import (
 	"path/filepath"
 	"sync"
 	"syscall"
+	"time"
 
 	"github.com/refraction-networking/gotapdance/tapdance"
 
 	pt "git.torproject.org/pluggable-transports/goptlib.git"
 	"git.torproject.org/pluggable-transports/snowflake.git/v2/common/safelog"
 )
+
+const RetryInterval = 10 * time.Second
 
 type ConjureConfig struct {
 	registerURL   string // URL of the conjure bidirectional registration API endpoint
@@ -34,6 +37,8 @@ func getSOCKSArgs(conn net.Conn, config *ConjureConfig) {
 
 // handle the SOCKS conn
 func handler(conn *pt.SocksConn, config *ConjureConfig) error {
+
+	shutdown := make(chan struct{})
 
 	bridgeAddr, err := net.ResolveTCPAddr("tcp", conn.Req.Target)
 	if err != nil {
@@ -52,21 +57,29 @@ func handler(conn *pt.SocksConn, config *ConjureConfig) error {
 
 	go func() {
 		for {
-			phantomConn, err := register(config)
-			if err == nil {
-				log.Printf("Connected to bridge at %s", conn.Req.Target)
-				if err := buffConn.SetConn(phantomConn); err != nil {
-					log.Printf("Error setting internal conn: %s", err.Error())
+			select {
+			case <-time.After(RetryInterval):
+				phantomConn, err := register(config)
+				if err == nil {
+					log.Printf("Connected to bridge at %s", conn.Req.Target)
+					if err := buffConn.SetConn(phantomConn); err != nil {
+						log.Printf("Error setting internal conn: %s", err.Error())
+					}
+					return
 				}
+				log.Printf("Error registering with station: %s", err.Error())
+				log.Printf("This may be due to high load, trying again.")
+				continue
+			case <-shutdown:
+				log.Println("Registration loop stopped")
 				return
 			}
-			log.Printf("Error registering with station: %s", err.Error())
-			log.Printf("This may be due to high load, trying again.")
 		}
 	}()
 
 	proxy(conn, buffConn)
 	log.Println("Closed connection to phantom proxy")
+	close(shutdown)
 	return nil
 }
 
