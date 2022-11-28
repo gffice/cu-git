@@ -42,19 +42,30 @@ func handler(conn *pt.SocksConn, config *ConjureConfig) error {
 	}
 	config.bridgeAddress = conn.Req.Target
 	log.Printf("Attempting to connect to bridge at %s", conn.Req.Target)
-	phantomConn, err := register(config)
-	if err != nil {
-		pt.Log(pt.LogSeverityWarning,
-			"Failed to register phantom proxy. This could be due to high load at the station.")
-		conn.Reject()
-		return err
-	}
-	log.Printf("Connected to bridge at %s", conn.Req.Target)
+
+	// optimistically grant all incoming SOCKS connections and start buffering data
 	err = conn.Grant(bridgeAddr)
 	if err != nil {
 		return err
 	}
-	proxy(conn, phantomConn)
+	buffConn := NewBufferedConn()
+
+	go func() {
+		for {
+			phantomConn, err := register(config)
+			if err == nil {
+				log.Printf("Connected to bridge at %s", conn.Req.Target)
+				if err := buffConn.SetConn(phantomConn); err != nil {
+					log.Printf("Error setting internal conn: %s", err.Error())
+				}
+				return
+			}
+			log.Printf("Error registering with station: %s", err.Error())
+			log.Printf("This may be due to high load, trying again.")
+		}
+	}()
+
+	proxy(conn, buffConn)
 	log.Println("Closed connection to phantom proxy")
 	return nil
 }
@@ -83,7 +94,7 @@ func acceptLoop(ln *pt.SocksListener, config *ConjureConfig) error {
 	return nil
 }
 
-func proxy(socks net.Conn, phantom net.Conn) {
+func proxy(socks io.ReadWriteCloser, phantom io.ReadWriteCloser) {
 	var wg sync.WaitGroup
 	wg.Add(2)
 	go func() {

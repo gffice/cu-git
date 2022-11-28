@@ -1,0 +1,63 @@
+package main
+
+import (
+	"bytes"
+	"io"
+	"log"
+	"net"
+	"sync"
+)
+
+type BufferedConn struct {
+	conn   net.Conn
+	buffer bytes.Buffer
+	lock   sync.Mutex
+	rp     *io.PipeReader
+	wp     *io.PipeWriter
+}
+
+func NewBufferedConn() *BufferedConn {
+
+	buffConn := new(BufferedConn)
+	buffConn.rp, buffConn.wp = io.Pipe()
+	return buffConn
+}
+
+func (c *BufferedConn) Read(b []byte) (int, error) {
+	return c.rp.Read(b)
+}
+
+func (c *BufferedConn) Write(b []byte) (int, error) {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+
+	if c.conn == nil {
+		log.Printf("Buffering %d bytes to send later", len(b))
+		c.buffer.Write(b)
+	} else {
+		c.conn.Write(b)
+	}
+	return len(b), nil
+}
+
+func (c *BufferedConn) Close() error {
+	return c.conn.Close()
+}
+
+func (c *BufferedConn) SetConn(conn net.Conn) error {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	if c.buffer.Len() > 0 {
+		n, err := conn.Write(c.buffer.Bytes())
+		if err != nil {
+			return err
+		}
+		go func() {
+			io.Copy(c.wp, conn)
+		}()
+		log.Printf("Flushed %d bytes from buffer", n)
+		c.buffer.Reset()
+	}
+	c.conn = conn
+	return nil
+}
