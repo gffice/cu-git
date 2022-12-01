@@ -30,7 +30,13 @@ type ConjureConfig struct {
 }
 
 // Get SOCKS arguments and populate config
-func getSOCKSArgs(conn net.Conn, config *ConjureConfig) {
+func getSOCKSArgs(conn *pt.SocksConn, config *ConjureConfig) {
+	if arg, ok := conn.Req.Args.Get("url"); ok {
+		config.registerURL = arg
+	}
+	if arg, ok := conn.Req.Args.Get("front"); ok {
+		config.front = arg
+	}
 	return
 
 }
