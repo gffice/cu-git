@@ -3,6 +3,6 @@ DataDirectory datadir
 
 ClientTransportPlugin conjure exec ./client -log conjure.log -unsafe-logging
 
-Bridge conjure 143.110.214.222:80 url=https://registration.refraction.network/api
+Bridge conjure 143.110.214.222:80 url=https://registration.refraction.network.global.prod.fastly.net/api front=cdn.sstatic.net
 
 SocksPort auto
