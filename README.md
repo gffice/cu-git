@@ -14,6 +14,7 @@ We currently have deployed a low capacity Conjure bridge named [Haunt](https://m
 
 ```
 cd client/
+go build
 tor -f torrc
 ```
 
