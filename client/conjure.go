@@ -44,6 +44,8 @@ func getSOCKSArgs(conn *pt.SocksConn, config *ConjureConfig) {
 // handle the SOCKS conn
 func handler(conn *pt.SocksConn, config *ConjureConfig) error {
 
+	defer conn.Close()
+
 	shutdown := make(chan struct{})
 
 	bridgeAddr, err := net.ResolveTCPAddr("tcp", conn.Req.Target)
