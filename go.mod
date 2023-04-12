@@ -5,7 +5,7 @@ go 1.17
 require (
 	git.torproject.org/pluggable-transports/goptlib.git v1.3.0
 	git.torproject.org/pluggable-transports/snowflake.git/v2 v2.5.1
-	github.com/pires/go-proxyproto v0.6.2
+	github.com/pires/go-proxyproto v0.7.0
 	github.com/refraction-networking/gotapdance v1.3.0
 )
 
