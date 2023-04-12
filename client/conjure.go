@@ -114,7 +114,6 @@ func acceptLoop(ln *pt.SocksListener, config *ConjureConfig) error {
 			}
 		}()
 	}
-	return nil
 }
 
 func proxy(socks io.ReadWriteCloser, phantom io.ReadWriteCloser) {
