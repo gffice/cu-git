@@ -3,14 +3,15 @@ module git.torproject.org/pluggable-transports/conjure
 go 1.17
 
 require (
-	git.torproject.org/pluggable-transports/goptlib.git v1.3.0
 	git.torproject.org/pluggable-transports/snowflake.git/v2 v2.5.1
 	github.com/pires/go-proxyproto v0.7.0
 	github.com/refraction-networking/gotapdance v1.3.0
+	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/goptlib v1.4.0
 )
 
 require (
 	filippo.io/edwards25519 v1.0.0-rc.1.0.20210721174708-390f27c3be20 // indirect
+	git.torproject.org/pluggable-transports/goptlib.git v1.3.0 // indirect
 	github.com/dchest/siphash v1.2.1 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/mroth/weightedrand v0.4.1 // indirect

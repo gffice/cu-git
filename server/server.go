@@ -15,9 +15,9 @@ import (
 	"syscall"
 	"time"
 
-	pt "git.torproject.org/pluggable-transports/goptlib.git"
 	"git.torproject.org/pluggable-transports/snowflake.git/v2/common/safelog"
 	pp "github.com/pires/go-proxyproto"
+	pt "gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/goptlib"
 )
 
 var ptInfo pt.ServerInfo

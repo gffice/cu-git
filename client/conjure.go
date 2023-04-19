@@ -17,8 +17,8 @@ import (
 
 	"github.com/refraction-networking/gotapdance/tapdance"
 
-	pt "git.torproject.org/pluggable-transports/goptlib.git"
 	"git.torproject.org/pluggable-transports/snowflake.git/v2/common/safelog"
+	pt "gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/goptlib"
 )
 
 const RetryInterval = 10 * time.Second
