@@ -18,6 +18,7 @@ variables:
         ca-certificates
         git
         lbzip2
+        libczmq-dev
 
 .go-test: &go-test
   - gofmt -d .
@@ -30,7 +31,7 @@ variables:
   - go build $REPRODUCIBLE_FLAGS
 
 go-1.18:
-  image: golang:1.18-stretch
+  image: golang:1.18-buster
   <<: *golang-docker-debian-template
   <<: *test-template
   script:

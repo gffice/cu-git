@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/refraction-networking/gotapdance/pkg/registration"
 	proto "github.com/refraction-networking/gotapdance/protobuf"
 	"github.com/refraction-networking/gotapdance/tapdance"
 )
@@ -46,6 +47,22 @@ func register(config *ConjureConfig) (net.Conn, error) {
 		Width: 0,
 	}
 
+	transport := http.DefaultTransport.(*http.Transport)
+	transport.Proxy = nil
+
+	// APIRegistrarBidirectional expects an HTTP client for sending the registration request.
+	// The http.RoundTripper associated with this client dictates the censorship-resistant
+	// rendezvous method used to establish a connection with the registration server.
+	// As of now, the deployed Conjure station supports direct HTTP connections and domain
+	// fronted connections.
+	client := &http.Client{
+		Transport: &Rendezvous{
+			registerURL: config.registerURL,
+			front:       config.front,
+			transport:   transport,
+		},
+	}
+
 	// The registration step connects a client with a phantom IP address.
 	// There are currently two options for registration:
 	//   1) APIRegistrarBidirectional: this is a bidirectional registration process that allows a
@@ -55,27 +72,18 @@ func register(config *ConjureConfig) (net.Conn, error) {
 	//        station which phantom IP to use
 	// For simplicity, we use the bidirectional registration process. Different censorship
 	// resistant transport methods can be used to tunnel the HTTP requests, such as domain fronting
-	registrar := tapdance.APIRegistrarBidirectional{
-		Endpoint: config.registerURL + "/register-bidirectional", //Note: this goes in the HTTP request
+	regConfig := &registration.Config{
+		Target: config.registerURL + "/register-bidirectional", //Note: this goes in the HTTP request
 		// TODO: reach out and ask what a reasonable value to set this to is
-		ConnectionDelay: time.Second,
-		MaxRetries:      0,
+		Delay:         time.Second,
+		MaxRetries:    0,
+		Bidirectional: true,
+		HTTPClient:    client,
 	}
 
-	transport := http.DefaultTransport.(*http.Transport)
-	transport.Proxy = nil
-
-	// APIRegistrarBidirectional expects an HTTP client for sending the registration request.
-	// The http.RoundTripper associated with this client dictates the censorship-resistant
-	// rendezvous method used to establish a connection with the registration server.
-	// As of now, the deployed Conjure station supports direct HTTP connections and domain
-	// fronted connections.
-	registrar.Client = &http.Client{
-		Transport: &Rendezvous{
-			registerURL: config.registerURL,
-			front:       config.front,
-			transport:   transport,
-		},
+	registrar, err := registration.NewAPIRegistrar(regConfig)
+	if err != nil {
+		return nil, err
 	}
 
 	dialer.DarkDecoyRegistrar = registrar
