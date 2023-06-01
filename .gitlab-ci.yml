@@ -38,7 +38,7 @@ go-1.18:
     - *go-test
 
 go-1.19:
-  image: golang:1.20-buster
+  image: golang:1.19-buster
   <<: *golang-docker-debian-template
   <<: *test-template
   script:
