@@ -1,4 +1,4 @@
-module git.torproject.org/pluggable-transports/conjure
+module gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/conjure
 
 go 1.17
 
