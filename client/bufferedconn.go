@@ -41,7 +41,10 @@ func (c *BufferedConn) Write(b []byte) (int, error) {
 }
 
 func (c *BufferedConn) Close() error {
-	return c.conn.Close()
+	if c.conn != nil {
+		return c.conn.Close()
+	}
+	return nil
 }
 
 func (c *BufferedConn) SetConn(conn net.Conn) error {
