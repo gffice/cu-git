@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"log"
 	"net"
 	"net/http"
@@ -10,6 +11,8 @@ import (
 	"github.com/refraction-networking/gotapdance/pkg/registration"
 	proto "github.com/refraction-networking/gotapdance/protobuf"
 	"github.com/refraction-networking/gotapdance/tapdance"
+
+	"gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/snowflake/v2/common/certs"
 )
 
 type Rendezvous struct {
@@ -47,7 +50,10 @@ func register(config *ConjureConfig) (net.Conn, error) {
 		Width: 0,
 	}
 
-	transport := http.DefaultTransport.(*http.Transport)
+	tlsConfig := &tls.Config{
+		RootCAs: certs.GetRootCAs(),
+	}
+	transport := &http.Transport{TLSClientConfig: tlsConfig}
 	transport.Proxy = nil
 
 	// APIRegistrarBidirectional expects an HTTP client for sending the registration request.

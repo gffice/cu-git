@@ -7,6 +7,7 @@ require (
 	github.com/pires/go-proxyproto v0.7.0
 	github.com/refraction-networking/gotapdance v1.5.0
 	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/goptlib v1.4.0
+	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/snowflake/v2 v2.6.0
 )
 
 require (
@@ -25,14 +26,15 @@ require (
 	github.com/mroth/weightedrand v1.0.0 // indirect
 	github.com/pebbe/zmq4 v1.2.9 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
-	github.com/pion/stun v0.3.5 // indirect
+	github.com/pion/stun v0.4.0 // indirect
+	github.com/pion/transport/v2 v2.0.2 // indirect
 	github.com/refraction-networking/conjure v0.4.0 // indirect
 	github.com/refraction-networking/utls v1.2.0 // indirect
 	github.com/sergeyfrolov/bsbuffer v0.0.0-20180903213811-94e85abb8507 // indirect
 	github.com/sirupsen/logrus v1.9.0 // indirect
 	gitlab.com/yawning/edwards25519-extra.git v0.0.0-20211229043746-2f91fcc9fbdb // indirect
 	gitlab.com/yawning/obfs4.git v0.0.0-20220904064028-336a71d6e4cf // indirect
-	golang.org/x/crypto v0.5.0 // indirect
+	golang.org/x/crypto v0.6.0 // indirect
 	golang.org/x/net v0.7.0 // indirect
 	golang.org/x/sys v0.5.0 // indirect
 	golang.org/x/text v0.7.0 // indirect
