@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/refraction-networking/gotapdance/pkg/registration"
-	proto "github.com/refraction-networking/gotapdance/protobuf"
+	"github.com/refraction-networking/conjure/pkg/registrars/registration"
+	"github.com/refraction-networking/conjure/proto"
 	"github.com/refraction-networking/gotapdance/tapdance"
 
 	"gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/snowflake/v2/common/certs"
