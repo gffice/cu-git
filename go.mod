@@ -6,7 +6,7 @@ require (
 	git.torproject.org/pluggable-transports/snowflake.git/v2 v2.5.1
 	github.com/pires/go-proxyproto v0.7.0
 	github.com/refraction-networking/gotapdance v1.5.0
-	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/goptlib v1.4.0
+	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/goptlib v1.5.0
 	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/snowflake/v2 v2.6.0
 )
 
