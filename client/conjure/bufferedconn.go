@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"sync"
+	"time"
 )
 
 type BufferedConn struct {
@@ -63,4 +64,20 @@ func (c *BufferedConn) SetConn(conn net.Conn) error {
 	}
 	c.conn = conn
 	return nil
+}
+
+func (c *BufferedConn) LocalAddr() net.Addr {
+	return c.conn.LocalAddr()
+}
+func (c *BufferedConn) RemoteAddr() net.Addr {
+	return c.conn.RemoteAddr()
+}
+func (c *BufferedConn) SetDeadline(t time.Time) error {
+	return c.conn.SetDeadline(t)
+}
+func (c *BufferedConn) SetReadDeadline(t time.Time) error {
+	return c.conn.SetReadDeadline(t)
+}
+func (c *BufferedConn) SetWriteDeadline(t time.Time) error {
+	return c.conn.SetWriteDeadline(t)
 }
