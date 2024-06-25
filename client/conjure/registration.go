@@ -1,4 +1,4 @@
-package main
+package conjure
 
 import (
 	"context"
@@ -15,24 +15,30 @@ import (
 	"gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/snowflake/v2/common/certs"
 )
 
+type ConjureConfig struct {
+	RegisterURL   string // URL of the conjure bidirectional registration API endpoint
+	Front         string
+	BridgeAddress string // IP address of the Tor Conjure PT bridge
+}
+
 type Rendezvous struct {
-	registerURL string
-	front       string
-	transport   *http.Transport
+	RegisterURL string
+	Front       string
+	Transport   *http.Transport
 }
 
 func (r *Rendezvous) RoundTrip(req *http.Request) (*http.Response, error) {
 
 	log.Println("Performing a Conjure registration with domain fronting...")
-	log.Println("Conjure station URL: ", r.registerURL)
-	log.Println("Domain front: ", r.front)
+	log.Println("Conjure station URL: ", r.RegisterURL)
+	log.Println("Domain front: ", r.Front)
 
-	if r.front != "" {
+	if r.Front != "" {
 		req.Host = req.URL.Host
-		req.URL.Host = r.front
+		req.URL.Host = r.Front
 	}
 
-	return r.transport.RoundTrip(req)
+	return r.Transport.RoundTrip(req)
 }
 
 func Register(config *ConjureConfig) (net.Conn, error) {
@@ -63,9 +69,9 @@ func Register(config *ConjureConfig) (net.Conn, error) {
 	// fronted connections.
 	client := &http.Client{
 		Transport: &Rendezvous{
-			registerURL: config.registerURL,
-			front:       config.front,
-			transport:   transport,
+			RegisterURL: config.RegisterURL,
+			Front:       config.Front,
+			Transport:   transport,
 		},
 	}
 
@@ -79,7 +85,7 @@ func Register(config *ConjureConfig) (net.Conn, error) {
 	// For simplicity, we use the bidirectional registration process. Different censorship
 	// resistant transport methods can be used to tunnel the HTTP requests, such as domain fronting
 	regConfig := &registration.Config{
-		Target: config.registerURL + "/register-bidirectional", //Note: this goes in the HTTP request
+		Target: config.RegisterURL + "/register-bidirectional", //Note: this goes in the HTTP request
 		// TODO: reach out and ask what a reasonable value to set this to is
 		Delay:         time.Second,
 		MaxRetries:    0,
@@ -100,11 +106,11 @@ func Register(config *ConjureConfig) (net.Conn, error) {
 	//   3) webrtc
 	dialer.Transport = proto.TransportType_Min
 
-	log.Printf("Using the registration API at %s", config.registerURL)
+	log.Printf("Using the registration API at %s", config.RegisterURL)
 	// Make a connection to the bridge through the phantom
 	// This will register the client, obtaining a phantom address and connect
 	// to that phantom address all in one go
-	phantomConn, err := dialer.DialContext(context.Background(), "tcp", config.bridgeAddress)
+	phantomConn, err := dialer.DialContext(context.Background(), "tcp", config.BridgeAddress)
 	if err != nil {
 		return nil, err
 	}

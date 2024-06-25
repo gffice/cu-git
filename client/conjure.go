@@ -18,31 +18,26 @@ import (
 	"github.com/refraction-networking/gotapdance/tapdance"
 
 	"git.torproject.org/pluggable-transports/snowflake.git/v2/common/safelog"
+	"gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/conjure/client/conjure"
 	pt "gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/goptlib"
 )
 
 const RetryInterval = 10 * time.Second
 
-type ConjureConfig struct {
-	registerURL   string // URL of the conjure bidirectional registration API endpoint
-	front         string
-	bridgeAddress string // IP address of the Tor Conjure PT bridge
-}
-
 // Get SOCKS arguments and populate config
-func getSOCKSArgs(conn *pt.SocksConn, config *ConjureConfig) {
+func getSOCKSArgs(conn *pt.SocksConn, config *conjure.ConjureConfig) {
 	if arg, ok := conn.Req.Args.Get("url"); ok {
-		config.registerURL = arg
+		config.RegisterURL = arg
 	}
 	if arg, ok := conn.Req.Args.Get("front"); ok {
-		config.front = arg
+		config.Front = arg
 	}
 	return
 
 }
 
 // handle the SOCKS conn
-func handler(conn *pt.SocksConn, config *ConjureConfig) error {
+func handler(conn *pt.SocksConn, config *conjure.ConjureConfig) error {
 
 	defer conn.Close()
 
@@ -53,7 +48,7 @@ func handler(conn *pt.SocksConn, config *ConjureConfig) error {
 		conn.Reject()
 		return err
 	}
-	config.bridgeAddress = conn.Req.Target
+	config.BridgeAddress = conn.Req.Target
 	log.Printf("Attempting to connect to bridge at %s", conn.Req.Target)
 
 	// optimistically grant all incoming SOCKS connections and start buffering data
@@ -61,11 +56,11 @@ func handler(conn *pt.SocksConn, config *ConjureConfig) error {
 	if err != nil {
 		return err
 	}
-	buffConn := NewBufferedConn()
+	buffConn := conjure.NewBufferedConn()
 
 	go func() {
 		for {
-			phantomConn, err := Register(config)
+			phantomConn, err := conjure.Register(config)
 			if err == nil {
 				log.Printf("Connected to bridge at %s", conn.Req.Target)
 				if err := buffConn.SetConn(phantomConn); err != nil {
@@ -93,7 +88,7 @@ func handler(conn *pt.SocksConn, config *ConjureConfig) error {
 	return nil
 }
 
-func acceptLoop(ln *pt.SocksListener, config *ConjureConfig) error {
+func acceptLoop(ln *pt.SocksListener, config *conjure.ConjureConfig) error {
 	defer ln.Close()
 
 	for {
@@ -186,9 +181,9 @@ func main() {
 	tapdance.Logger().Warnf("Redirecting log to file")
 
 	// Configure Conjure
-	config := &ConjureConfig{
-		registerURL: *registerURL,
-		front:       *front,
+	config := &conjure.ConjureConfig{
+		RegisterURL: *registerURL,
+		Front:       *front,
 	}
 
 	// Tor client-side transport setup
