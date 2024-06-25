@@ -65,7 +65,7 @@ func handler(conn *pt.SocksConn, config *ConjureConfig) error {
 
 	go func() {
 		for {
-			phantomConn, err := register(config)
+			phantomConn, err := Register(config)
 			if err == nil {
 				log.Printf("Connected to bridge at %s", conn.Req.Target)
 				if err := buffConn.SetConn(phantomConn); err != nil {

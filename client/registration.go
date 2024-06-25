@@ -35,7 +35,7 @@ func (r *Rendezvous) RoundTrip(req *http.Request) (*http.Response, error) {
 	return r.transport.RoundTrip(req)
 }
 
-func register(config *ConjureConfig) (net.Conn, error) {
+func Register(config *ConjureConfig) (net.Conn, error) {
 
 	dialer := &tapdance.Dialer{
 		// Use conjure to connect to phantom addresses, not vanilla tapdance
