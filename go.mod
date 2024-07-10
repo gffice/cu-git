@@ -1,13 +1,15 @@
 module gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/conjure
 
-go 1.17
+go 1.21
+
+toolchain go1.22.2
 
 require (
-	git.torproject.org/pluggable-transports/snowflake.git/v2 v2.5.1
 	github.com/pires/go-proxyproto v0.7.0
 	github.com/refraction-networking/conjure v0.6.7
 	github.com/refraction-networking/gotapdance v1.6.8
 	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/goptlib v1.5.0
+	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/ptutil v0.0.0-20240509090240-b27cf78add95
 	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/snowflake/v2 v2.6.1
 )
 
@@ -32,9 +34,9 @@ require (
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	golang.org/x/crypto v0.12.0 // indirect
 	golang.org/x/net v0.13.0 // indirect
-	golang.org/x/sys v0.11.0 // indirect
+	golang.org/x/sys v0.20.0 // indirect
 	golang.org/x/text v0.12.0 // indirect
-	google.golang.org/protobuf v1.31.0 // indirect
+	google.golang.org/protobuf v1.34.1 // indirect
 )
 
 replace github.com/pion/dtls/v2 => github.com/mingyech/dtls/v2 v2.0.0
