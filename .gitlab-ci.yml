@@ -30,22 +30,15 @@ variables:
   - go get
   - go build $REPRODUCIBLE_FLAGS
 
-go-1.18:
-  image: golang:1.18-buster
+go-1.21:
+  image: golang:1.21-bookworm
   <<: *golang-docker-debian-template
   <<: *test-template
   script:
     - *go-test
 
-go-1.19:
-  image: golang:1.19-buster
-  <<: *golang-docker-debian-template
-  <<: *test-template
-  script:
-    - *go-test
-
-go-1.20:
-  image: golang:1.20-buster
+go-1.22:
+  image: golang:1.22-bookworm
   <<: *golang-docker-debian-template
   <<: *test-template
   script:
