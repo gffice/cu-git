@@ -7,7 +7,7 @@ toolchain go1.22.2
 require (
 	github.com/pires/go-proxyproto v0.8.0
 	github.com/refraction-networking/conjure v0.7.10
-	github.com/refraction-networking/gotapdance v1.7.7
+	github.com/refraction-networking/gotapdance v1.7.10
 	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/goptlib v1.5.0
 	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/ptutil v0.0.0-20240710081135-6c4d8ed41027
 	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/snowflake/v2 v2.10.1
