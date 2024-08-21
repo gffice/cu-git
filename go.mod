@@ -6,14 +6,16 @@ toolchain go1.22.2
 
 require (
 	github.com/pires/go-proxyproto v0.8.0
-	github.com/refraction-networking/conjure v0.6.7
-	github.com/refraction-networking/gotapdance v1.6.8
+	github.com/refraction-networking/conjure v0.7.10
+	github.com/refraction-networking/gotapdance v1.7.7
 	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/goptlib v1.5.0
 	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/ptutil v0.0.0-20240710081135-6c4d8ed41027
 	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/snowflake/v2 v2.10.1
 )
 
 require (
+	filippo.io/bigmod v0.0.1 // indirect
+	filippo.io/keygen v0.0.0-20230306160926-5201437acf8e // indirect
 	github.com/andybalholm/brotli v1.0.6 // indirect
 	github.com/cloudflare/circl v1.3.7 // indirect
 	github.com/dchest/siphash v1.2.3 // indirect
@@ -21,7 +23,9 @@ require (
 	github.com/gaukas/godicttls v0.0.4 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/klauspost/compress v1.17.9 // indirect
-	github.com/libp2p/go-reuseport v0.3.0 // indirect
+	github.com/libp2p/go-reuseport v0.4.0 // indirect
+	github.com/mroth/weightedrand v1.0.0 // indirect
+	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pion/dtls/v2 v2.2.12 // indirect
 	github.com/pion/logging v0.2.2 // indirect
 	github.com/pion/randutil v0.1.0 // indirect
