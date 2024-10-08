@@ -5,7 +5,7 @@ go 1.21
 toolchain go1.22.2
 
 require (
-	github.com/pires/go-proxyproto v0.7.0
+	github.com/pires/go-proxyproto v0.8.0
 	github.com/refraction-networking/conjure v0.6.7
 	github.com/refraction-networking/gotapdance v1.6.8
 	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/goptlib v1.5.0
