@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -32,8 +33,17 @@ func getSOCKSArgs(conn *pt.SocksConn, config *conjure.ConjureConfig) {
 	if arg, ok := conn.Req.Args.Get("front"); ok {
 		config.Front = arg
 	}
-	return
-
+	if arg, ok := conn.Req.Args.Get("utls-nosni"); ok {
+		switch strings.ToLower(arg) {
+		case "true":
+			fallthrough
+		case "yes":
+			config.UTLSRemoveSNI = true
+		}
+	}
+	if arg, ok := conn.Req.Args.Get("utls-imitate"); ok {
+		config.UTLSClientID = arg
+	}
 }
 
 // handle the SOCKS conn
@@ -141,6 +151,8 @@ func main() {
 	unsafeLogging := flag.Bool("unsafe-logging", false, "prevent logs from being scrubbed")
 	front := flag.String("front", "", "domain front")
 	registerURL := flag.String("registerURL", "", "URL of the conjure registration station")
+	uTLSClientHelloID := flag.String("utls-imitate", "", "type of TLS client to imitate with utls")
+	uTLSRemoveSNI := flag.Bool("utls-nosni", false, "remove SNI from client hello(ignored if uTLS is not used)")
 
 	flag.Parse()
 
@@ -182,8 +194,10 @@ func main() {
 
 	// Configure Conjure
 	config := &conjure.ConjureConfig{
-		RegisterURL: *registerURL,
-		Front:       *front,
+		RegisterURL:   *registerURL,
+		Front:         *front,
+		UTLSClientID:  *uTLSClientHelloID,
+		UTLSRemoveSNI: *uTLSRemoveSNI,
 	}
 
 	// Tor client-side transport setup

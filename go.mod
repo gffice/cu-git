@@ -8,8 +8,9 @@ require (
 	github.com/pires/go-proxyproto v0.8.0
 	github.com/refraction-networking/conjure v0.7.10
 	github.com/refraction-networking/gotapdance v1.7.10
+	github.com/refraction-networking/utls v1.6.7
 	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/goptlib v1.5.0
-	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/ptutil v0.0.0-20240710081135-6c4d8ed41027
+	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/ptutil v0.0.0-20250129175826-48a566259500
 	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/snowflake/v2 v2.10.1
 )
 
@@ -34,7 +35,6 @@ require (
 	github.com/pion/transport/v2 v2.2.10 // indirect
 	github.com/refraction-networking/ed25519 v0.1.2 // indirect
 	github.com/refraction-networking/obfs4 v0.1.2 // indirect
-	github.com/refraction-networking/utls v1.6.7 // indirect
 	github.com/sergeyfrolov/bsbuffer v0.0.0-20180903213811-94e85abb8507 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/wlynxg/anet v0.0.3 // indirect

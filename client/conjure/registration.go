@@ -3,6 +3,7 @@ package conjure
 import (
 	"context"
 	"crypto/tls"
+	"fmt"
 	"log"
 	"net"
 	"net/http"
@@ -12,6 +13,9 @@ import (
 	transports "github.com/refraction-networking/conjure/pkg/transports/client"
 	"github.com/refraction-networking/conjure/proto"
 	"github.com/refraction-networking/gotapdance/tapdance"
+	utls "github.com/refraction-networking/utls"
+
+	utlsutil "gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/ptutil/utls"
 
 	"gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/snowflake/v2/common/certs"
 )
@@ -20,12 +24,16 @@ type ConjureConfig struct {
 	RegisterURL   string // URL of the conjure bidirectional registration API endpoint
 	Front         string
 	BridgeAddress string // IP address of the Tor Conjure PT bridge
+	UTLSClientID  string
+	UTLSRemoveSNI bool
 }
 
 type Rendezvous struct {
-	RegisterURL string
-	Front       string
-	Transport   *http.Transport
+	RegisterURL   string
+	Front         string
+	Transport     http.RoundTripper
+	UTLSClientID  string
+	UTLSRemoveSNI bool
 }
 
 func (r *Rendezvous) RoundTrip(req *http.Request) (*http.Response, error) {
@@ -40,6 +48,19 @@ func (r *Rendezvous) RoundTrip(req *http.Request) (*http.Response, error) {
 	}
 
 	return r.Transport.RoundTrip(req)
+}
+
+// We make a copy of DefaultTransport because we want the default Dial
+// and TLSHandshakeTimeout settings. But we want to disable the default
+// ProxyFromEnvironment setting.
+func createRegistrationTransport() http.RoundTripper {
+	tlsConfig := &tls.Config{
+		RootCAs: certs.GetRootCAs(),
+	}
+	transport := &http.Transport{TLSClientConfig: tlsConfig}
+	transport.Proxy = nil
+	transport.ResponseHeaderTimeout = 15 * time.Second
+	return transport
 }
 
 func Register(config *ConjureConfig) (net.Conn, error) {
@@ -57,11 +78,19 @@ func Register(config *ConjureConfig) (net.Conn, error) {
 		Width: 0,
 	}
 
-	tlsConfig := &tls.Config{
-		RootCAs: certs.GetRootCAs(),
+	transport := createRegistrationTransport()
+	if config.UTLSClientID != "" {
+		utlsClienHelloID, err := utlsutil.NameToUTLSID(config.UTLSClientID)
+		if err != nil {
+			return nil, fmt.Errorf("unable to create ")
+		}
+		utlsConfig := &utls.Config{
+			RootCAs: certs.GetRootCAs(),
+		}
+
+		transport = utlsutil.NewUTLSHTTPRoundTripperWithProxy(utlsClienHelloID, utlsConfig, transport, config.UTLSRemoveSNI, nil)
+
 	}
-	transport := &http.Transport{TLSClientConfig: tlsConfig}
-	transport.Proxy = nil
 
 	// APIRegistrarBidirectional expects an HTTP client for sending the registration request.
 	// The http.RoundTripper associated with this client dictates the censorship-resistant
@@ -70,9 +99,11 @@ func Register(config *ConjureConfig) (net.Conn, error) {
 	// fronted connections.
 	client := &http.Client{
 		Transport: &Rendezvous{
-			RegisterURL: config.RegisterURL,
-			Front:       config.Front,
-			Transport:   transport,
+			RegisterURL:   config.RegisterURL,
+			Front:         config.Front,
+			Transport:     transport,
+			UTLSClientID:  config.UTLSClientID,
+			UTLSRemoveSNI: config.UTLSRemoveSNI,
 		},
 	}
 
