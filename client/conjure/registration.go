@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/refraction-networking/conjure/pkg/registrars/registration"
+	transports "github.com/refraction-networking/conjure/pkg/transports/client"
 	"github.com/refraction-networking/conjure/proto"
 	"github.com/refraction-networking/gotapdance/tapdance"
 
@@ -85,7 +86,7 @@ func Register(config *ConjureConfig) (net.Conn, error) {
 	// For simplicity, we use the bidirectional registration process. Different censorship
 	// resistant transport methods can be used to tunnel the HTTP requests, such as domain fronting
 	regConfig := &registration.Config{
-		Target: config.RegisterURL + "/register-bidirectional", //Note: this goes in the HTTP request
+		Target: config.RegisterURL + "/api/register-bidirectional", //Note: this goes in the HTTP request
 		// TODO: reach out and ask what a reasonable value to set this to is
 		Delay:         time.Second,
 		MaxRetries:    0,
@@ -102,11 +103,15 @@ func Register(config *ConjureConfig) (net.Conn, error) {
 
 	// There are currently three available transports:
 	//   1) min
-	//   2) obfs4
-	//   3) webrtc
-	dialer.Transport = proto.TransportType_Min
+	//   2) prefix
+	//   3) obfs4
+	params := &proto.GenericTransportParams{}
+	dialer.TransportConfig, err = transports.NewWithParams("min", params)
+	if err != nil {
+		return nil, err
+	}
 
-	log.Printf("Using the registration API at %s", config.RegisterURL)
+	log.Printf("Using the registration API at %s", regConfig.Target)
 	// Make a connection to the bridge through the phantom
 	// This will register the client, obtaining a phantom address and connect
 	// to that phantom address all in one go
