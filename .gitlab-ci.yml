@@ -1,4 +1,5 @@
 variables:
+  DEBIAN_STABLE: bullseye
   DEBIAN_FRONTEND: noninteractive
   REPRODUCIBLE_FLAGS: -trimpath -ldflags=-buildid=
 
@@ -31,14 +32,14 @@ variables:
   - go build $REPRODUCIBLE_FLAGS
 
 go-1.21:
-  image: golang:1.21-bookworm
+  image: containers.torproject.org/tpo/anti-censorship/duplicatedcontainerimages:golang-1.21-$DEBIAN_STABLE
   <<: *golang-docker-debian-template
   <<: *test-template
   script:
     - *go-test
 
-go-1.22:
-  image: golang:1.22-bookworm
+go-1.23:
+  image: containers.torproject.org/tpo/anti-censorship/duplicatedcontainerimages:golang-1.23-$DEBIAN_STABLE
   <<: *golang-docker-debian-template
   <<: *test-template
   script:
