@@ -30,8 +30,12 @@ func getSOCKSArgs(conn *pt.SocksConn, config *conjure.ConjureConfig) {
 	if arg, ok := conn.Req.Args.Get("url"); ok {
 		config.RegisterURL = arg
 	}
-	if arg, ok := conn.Req.Args.Get("front"); ok {
-		config.Front = arg
+	if arg, ok := conn.Req.Args.Get("fronts"); ok {
+		if arg != "" {
+			config.Fronts = strings.Split(strings.TrimSpace(arg), ",")
+		}
+	} else if arg, ok := conn.Req.Args.Get("front"); ok {
+		config.Fronts = strings.Split(strings.TrimSpace(arg), ",")
 	}
 	if arg, ok := conn.Req.Args.Get("utls-nosni"); ok {
 		switch strings.ToLower(arg) {
@@ -149,7 +153,7 @@ func main() {
 	logToStateDir := flag.Bool("log-to-state-dir", false,
 		"resolve the log file relative to tor's pt state dir")
 	unsafeLogging := flag.Bool("unsafe-logging", false, "prevent logs from being scrubbed")
-	front := flag.String("front", "", "domain front")
+	frontDomainsCommas := flag.String("fronts", "", "comma-separated list of front domains")
 	registerURL := flag.String("registerURL", "", "URL of the conjure registration station")
 	uTLSClientHelloID := flag.String("utls-imitate", "", "type of TLS client to imitate with utls")
 	uTLSRemoveSNI := flag.Bool("utls-nosni", false, "remove SNI from client hello(ignored if uTLS is not used)")
@@ -178,6 +182,11 @@ func main() {
 	if !*unsafeLogging {
 		logFile = &safelog.LogScrubber{Output: logFile}
 	}
+	var frontDomains []string
+	if *frontDomainsCommas != "" {
+		frontDomains = strings.Split(strings.TrimSpace(*frontDomainsCommas), ",")
+	}
+
 	log.SetFlags(log.LstdFlags | log.LUTC)
 	log.SetOutput(logFile)
 
@@ -195,7 +204,7 @@ func main() {
 	// Configure Conjure
 	config := &conjure.ConjureConfig{
 		RegisterURL:   *registerURL,
-		Front:         *front,
+		Fronts:        frontDomains,
 		UTLSClientID:  *uTLSClientHelloID,
 		UTLSRemoveSNI: *uTLSRemoveSNI,
 	}

@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"log"
+	"math/rand"
 	"net"
 	"net/http"
 	"time"
@@ -22,7 +23,7 @@ import (
 
 type ConjureConfig struct {
 	RegisterURL   string // URL of the conjure bidirectional registration API endpoint
-	Front         string
+	Fronts        []string
 	BridgeAddress string // IP address of the Tor Conjure PT bridge
 	UTLSClientID  string
 	UTLSRemoveSNI bool
@@ -30,7 +31,7 @@ type ConjureConfig struct {
 
 type Rendezvous struct {
 	RegisterURL   string
-	Front         string
+	Fronts        []string
 	Transport     http.RoundTripper
 	UTLSClientID  string
 	UTLSRemoveSNI bool
@@ -40,11 +41,15 @@ func (r *Rendezvous) RoundTrip(req *http.Request) (*http.Response, error) {
 
 	log.Println("Performing a Conjure registration with domain fronting...")
 	log.Println("Conjure station URL: ", r.RegisterURL)
-	log.Println("Domain front: ", r.Front)
 
-	if r.Front != "" {
+	if len(r.Fronts) != 0 {
+		// Do domain fronting. Replace the domain in the URL's with a randomly
+		// selected front, and store the original domain the HTTP Host header.
+		rand.Seed(time.Now().UnixNano())
+		front := r.Fronts[rand.Intn(len(r.Fronts))]
+		log.Println("Domain front: ", front)
 		req.Host = req.URL.Host
-		req.URL.Host = r.Front
+		req.URL.Host = front
 	}
 
 	return r.Transport.RoundTrip(req)
@@ -100,7 +105,7 @@ func Register(config *ConjureConfig) (net.Conn, error) {
 	client := &http.Client{
 		Transport: &Rendezvous{
 			RegisterURL:   config.RegisterURL,
-			Front:         config.Front,
+			Fronts:        config.Fronts,
 			Transport:     transport,
 			UTLSClientID:  config.UTLSClientID,
 			UTLSRemoveSNI: config.UTLSRemoveSNI,
