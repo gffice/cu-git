@@ -124,6 +124,8 @@ gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/ptutil v0.0.0-202
 gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/ptutil v0.0.0-20240710081135-6c4d8ed41027/go.mod h1:n/u74vECtThx3cvWkCD7j7PRtMb9oBTq33m74g4hL+c=
 gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/ptutil v0.0.0-20250129175826-48a566259500 h1:lt8iyIWtJGIF2uOiPtcbhqNOmnrVmi+x04jNwudqPBA=
 gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/ptutil v0.0.0-20250129175826-48a566259500/go.mod h1:PK7EvweKeypdelDyh1m7N922aldSeCAG8n0lJ7RAXWQ=
+gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/ptutil v0.0.0-20250130151315-efaf4e0ec0d3 h1:pwWCiqrB6b3SynILsv3M+76utmcgMiTZ2aqfccjWmxo=
+gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/ptutil v0.0.0-20250130151315-efaf4e0ec0d3/go.mod h1:PK7EvweKeypdelDyh1m7N922aldSeCAG8n0lJ7RAXWQ=
 gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/snowflake/v2 v2.6.1 h1:PenLil49Ka399yxO9CfVpLFFsOLjwLCKMc/uMFTVGo4=
 gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/snowflake/v2 v2.6.1/go.mod h1:Edotm7eSJgyaVDc0aQq3W7/cNNhWyWajm4DQgTKC5yI=
 gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/snowflake/v2 v2.10.1 h1:Oik2tb1qbnbrxOlvRNul2FrBi4j2pnqFvPPEWCOSG1I=
