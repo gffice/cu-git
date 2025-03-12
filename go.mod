@@ -6,7 +6,7 @@ toolchain go1.24.2
 
 require (
 	github.com/pires/go-proxyproto v0.8.0
-	github.com/refraction-networking/conjure v0.7.11
+	github.com/refraction-networking/conjure v0.7.12-0.20250507182851-8676ab6282b8
 	github.com/refraction-networking/gotapdance v1.7.10
 	github.com/refraction-networking/utls v1.6.7
 	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/goptlib v1.6.0
@@ -22,7 +22,7 @@ require (
 	github.com/dchest/siphash v1.2.3 // indirect
 	github.com/flynn/noise v1.1.0 // indirect
 	github.com/gaukas/godicttls v0.0.4 // indirect
-	github.com/golang/protobuf v1.5.3 // indirect
+	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/klauspost/compress v1.17.11 // indirect
 	github.com/libp2p/go-reuseport v0.4.0 // indirect
 	github.com/mroth/weightedrand v1.0.0 // indirect
@@ -43,7 +43,11 @@ require (
 	golang.org/x/net v0.35.0 // indirect
 	golang.org/x/sys v0.30.0 // indirect
 	golang.org/x/text v0.22.0 // indirect
-	google.golang.org/protobuf v1.36.1 // indirect
+	google.golang.org/protobuf v1.36.5 // indirect
 )
 
-replace github.com/pion/dtls/v2 => github.com/mingyech/dtls/v2 v2.0.0
+replace (
+	github.com/pion/dtls/v2 => github.com/mingyech/dtls/v2 v2.0.0
+	github.com/refraction-networking/conjure v0.7.11 => github.com/refraction-networking/conjure v0.7.12-0.20250507182851-8676ab6282b8
+
+)
