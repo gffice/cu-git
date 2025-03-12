@@ -24,10 +24,12 @@ import (
 type ConjureConfig struct {
 	RegisterURL   string // URL of the conjure bidirectional registration API endpoint
 	Fronts        []string
+	AMPCacheURL   string
 	BridgeAddress string // IP address of the Tor Conjure PT bridge
 	UTLSClientID  string
 	UTLSRemoveSNI bool
 	Transport     string
+	STUNAddr      string
 }
 
 type Rendezvous struct {
@@ -98,6 +100,9 @@ func Register(config *ConjureConfig) (net.Conn, error) {
 
 	}
 
+	var registrar tapdance.Registrar
+	var err error
+
 	// APIRegistrarBidirectional expects an HTTP client for sending the registration request.
 	// The http.RoundTripper associated with this client dictates the censorship-resistant
 	// rendezvous method used to establish a connection with the registration server.
@@ -114,14 +119,18 @@ func Register(config *ConjureConfig) (net.Conn, error) {
 	}
 
 	// The registration step connects a client with a phantom IP address.
-	// There are currently two options for registration:
-	//   1) APIRegistrarBidirectional: this is a bidirectional registration process that allows a
+	// There are currently three options for registration:
+	//   1) APIRegistrarBidirectional: this is a bidirectional registration process that allows
 	//        a client to submit a REST API request over HTTP for the phantom IP
-	//   2) DecoyRegistrar: this is a unidirectional registration process used by the
+	//   2) AMPCacheRegistrarBidirectional: this is a bidirectional registration process that
+	//       allows a client to use AMPCache as a proxy to submit a request to the registration
+	//       server for the phantom IP
+	//   3) DecoyRegistrar: this is a unidirectional registration process used by the
 	//        original TapDance protocol in which the client essentially tells the refraction
 	//        station which phantom IP to use
-	// For simplicity, we use the bidirectional registration process. Different censorship
-	// resistant transport methods can be used to tunnel the HTTP requests, such as domain fronting
+	// For simplicity, we implement support for the bidirectional
+	// registration and ampcache registration processes. Different censorship resistant
+	// transport methods can be used to tunnel the HTTP requests, such as domain fronting
 	regConfig := &registration.Config{
 		Target: config.RegisterURL + "/api/register-bidirectional", //Note: this goes in the HTTP request
 		// TODO: reach out and ask what a reasonable value to set this to is
@@ -130,8 +139,16 @@ func Register(config *ConjureConfig) (net.Conn, error) {
 		Bidirectional: true,
 		HTTPClient:    client,
 	}
-
-	registrar, err := registration.NewAPIRegistrar(regConfig)
+	if config.AMPCacheURL != "" {
+		regConfig.Target = config.RegisterURL + "/amp/register-bidirectional" //Note: this goes in the HTTP request
+		regConfig.AMPCacheURL = config.AMPCacheURL
+		regConfig.STUNAddr = config.STUNAddr
+		log.Println("Register through AMP cache at:", regConfig.Target)
+		registrar, err = registration.NewAMPCacheRegistrar(regConfig)
+	} else {
+		log.Println("Register through API with:", regConfig.Target)
+		registrar, err = registration.NewAPIRegistrar(regConfig)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -162,7 +179,6 @@ func Register(config *ConjureConfig) (net.Conn, error) {
 		return nil, err
 	}
 
-	log.Printf("Using the registration API at %s", regConfig.Target)
 	// Make a connection to the bridge through the phantom
 	// This will register the client, obtaining a phantom address and connect
 	// to that phantom address all in one go
