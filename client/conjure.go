@@ -27,6 +27,10 @@ const RetryInterval = 10 * time.Second
 
 // Get SOCKS arguments and populate config
 func getSOCKSArgs(conn *pt.SocksConn, config *conjure.ConjureConfig) {
+	// Check to see if our command line options are overriden by SOCKS options
+	if arg, ok := conn.Req.Args.Get("ampcache"); ok {
+		config.AMPCacheURL = arg
+	}
 	if arg, ok := conn.Req.Args.Get("url"); ok {
 		config.RegisterURL = arg
 	}
@@ -50,6 +54,9 @@ func getSOCKSArgs(conn *pt.SocksConn, config *conjure.ConjureConfig) {
 	}
 	if arg, ok := conn.Req.Args.Get("transport"); ok {
 		config.Transport = arg
+	}
+	if arg, ok := conn.Req.Args.Get("stun"); ok {
+		config.STUNAddr = arg
 	}
 }
 
@@ -157,10 +164,12 @@ func main() {
 		"resolve the log file relative to tor's pt state dir")
 	unsafeLogging := flag.Bool("unsafe-logging", false, "prevent logs from being scrubbed")
 	frontDomainsCommas := flag.String("fronts", "", "comma-separated list of front domains")
+	ampCacheURL := flag.String("ampcache", "", "URL of AMP cache to use as a proxy for signaling")
 	registerURL := flag.String("registerURL", "", "URL of the conjure registration station")
 	uTLSClientHelloID := flag.String("utls-imitate", "", "type of TLS client to imitate with utls")
 	uTLSRemoveSNI := flag.Bool("utls-nosni", false, "remove SNI from client hello(ignored if uTLS is not used)")
 	defaultTransport := flag.String("transport", "min", "default transport to connect to phantom proxies")
+	stunAddr := flag.String("stun", "stun.antisip.com:3478", "STUN server address needed for IP retrieval, use with ampCacheURL specified")
 
 	flag.Parse()
 
@@ -209,9 +218,11 @@ func main() {
 	config := &conjure.ConjureConfig{
 		RegisterURL:   *registerURL,
 		Fronts:        frontDomains,
+		AMPCacheURL:   *ampCacheURL,
 		UTLSClientID:  *uTLSClientHelloID,
 		UTLSRemoveSNI: *uTLSRemoveSNI,
 		Transport:     *defaultTransport,
+		STUNAddr:      *stunAddr,
 	}
 
 	// Tor client-side transport setup
