@@ -5,7 +5,6 @@ import (
 	"errors"
 	"flag"
 	"io"
-	"io/ioutil"
 	"log"
 	"net"
 	"os"
@@ -172,7 +171,7 @@ func main() {
 
 	// Set up logging
 	var logFile io.Writer
-	logFile = ioutil.Discard
+	logFile = io.Discard
 	if *logFilename != "" {
 		if *logToStateDir {
 			*logFilename = filepath.Join(stateDir, *logFilename)
@@ -250,7 +249,7 @@ func main() {
 	// https://gitweb.torproject.org/torspec.git/tree/pt-spec.txt#n203
 	if os.Getenv("TOR_PT_EXIT_ON_STDIN_CLOSE") == "1" {
 		go func() {
-			if _, err := io.Copy(ioutil.Discard, os.Stdin); err != nil {
+			if _, err := io.Copy(io.Discard, os.Stdin); err != nil {
 				log.Printf("Error copying os.Stdin to ioutil.Discard: %v", err)
 			}
 			log.Printf("Terminating because of stdin close")
