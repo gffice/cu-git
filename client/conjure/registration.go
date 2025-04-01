@@ -27,6 +27,7 @@ type ConjureConfig struct {
 	BridgeAddress string // IP address of the Tor Conjure PT bridge
 	UTLSClientID  string
 	UTLSRemoveSNI bool
+	Transport     string
 }
 
 type Rendezvous struct {
@@ -140,9 +141,23 @@ func Register(config *ConjureConfig) (net.Conn, error) {
 	// There are currently three available transports:
 	//   1) min
 	//   2) prefix
-	//   3) obfs4
-	params := &proto.GenericTransportParams{}
-	dialer.TransportConfig, err = transports.NewWithParams("min", params)
+	//   3) dtls
+	var params any
+	switch config.Transport {
+	case "dtls":
+		randomize := true
+		unordered := false
+		params = &proto.DTLSTransportParams{RandomizeDstPort: &randomize, Unordered: &unordered}
+	case "prefix":
+		randomize := true
+		id := int32(-1)
+		params = &proto.PrefixTransportParams{RandomizeDstPort: &randomize, PrefixId: &id}
+	default:
+		params = &proto.GenericTransportParams{}
+		config.Transport = "min"
+	}
+
+	dialer.TransportConfig, err = transports.NewWithParams(config.Transport, params)
 	if err != nil {
 		return nil, err
 	}

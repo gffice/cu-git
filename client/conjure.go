@@ -48,6 +48,9 @@ func getSOCKSArgs(conn *pt.SocksConn, config *conjure.ConjureConfig) {
 	if arg, ok := conn.Req.Args.Get("utls-imitate"); ok {
 		config.UTLSClientID = arg
 	}
+	if arg, ok := conn.Req.Args.Get("transport"); ok {
+		config.Transport = arg
+	}
 }
 
 // handle the SOCKS conn
@@ -157,6 +160,7 @@ func main() {
 	registerURL := flag.String("registerURL", "", "URL of the conjure registration station")
 	uTLSClientHelloID := flag.String("utls-imitate", "", "type of TLS client to imitate with utls")
 	uTLSRemoveSNI := flag.Bool("utls-nosni", false, "remove SNI from client hello(ignored if uTLS is not used)")
+	defaultTransport := flag.String("transport", "min", "default transport to connect to phantom proxies")
 
 	flag.Parse()
 
@@ -207,6 +211,7 @@ func main() {
 		Fronts:        frontDomains,
 		UTLSClientID:  *uTLSClientHelloID,
 		UTLSRemoveSNI: *uTLSRemoveSNI,
+		Transport:     *defaultTransport,
 	}
 
 	// Tor client-side transport setup
