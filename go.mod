@@ -1,12 +1,12 @@
 module gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/conjure
 
-go 1.21
+go 1.22.0
 
 toolchain go1.24.2
 
 require (
 	github.com/pires/go-proxyproto v0.8.0
-	github.com/refraction-networking/conjure v0.7.10
+	github.com/refraction-networking/conjure v0.7.11
 	github.com/refraction-networking/gotapdance v1.7.10
 	github.com/refraction-networking/utls v1.6.7
 	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/goptlib v1.6.0
@@ -15,12 +15,12 @@ require (
 )
 
 require (
-	filippo.io/bigmod v0.0.1 // indirect
-	filippo.io/keygen v0.0.0-20230306160926-5201437acf8e // indirect
-	github.com/andybalholm/brotli v1.0.6 // indirect
-	github.com/cloudflare/circl v1.3.7 // indirect
+	filippo.io/bigmod v0.0.3 // indirect
+	filippo.io/keygen v0.0.0-20240718133620-7f162efbbd87 // indirect
+	github.com/andybalholm/brotli v1.1.1 // indirect
+	github.com/cloudflare/circl v1.5.0 // indirect
 	github.com/dchest/siphash v1.2.3 // indirect
-	github.com/flynn/noise v1.0.0 // indirect
+	github.com/flynn/noise v1.1.0 // indirect
 	github.com/gaukas/godicttls v0.0.4 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/klauspost/compress v1.17.11 // indirect
