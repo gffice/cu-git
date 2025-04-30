@@ -2,7 +2,7 @@ module gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/conjure
 
 go 1.21
 
-toolchain go1.22.2
+toolchain go1.24.2
 
 require (
 	github.com/pires/go-proxyproto v0.8.0
