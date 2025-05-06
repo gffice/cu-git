@@ -16,6 +16,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/refraction-networking/conjure/pkg/client/assets"
 	"github.com/refraction-networking/gotapdance/tapdance"
 
 	"gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/conjure/client/conjure"
@@ -201,7 +202,7 @@ func main() {
 			log.Fatal(err)
 		}
 	}
-	tapdance.AssetsSetDir(*assetDir)
+	assets.AssetsSetDir(*assetDir)
 	tapdance.SetLoggerOutput(logFile)
 	tapdance.Logger().Warnf("Redirecting log to file")
 
