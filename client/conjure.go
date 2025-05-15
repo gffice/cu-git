@@ -81,13 +81,14 @@ func handler(conn *pt.SocksConn, config *conjure.ConjureConfig) error {
 		return err
 	}
 	buffConn := conjure.NewBufferedConn()
+	reset := make(chan struct{})
 
 	go func() {
 		for {
 			phantomConn, err := conjure.Register(config)
 			if err == nil {
 				log.Printf("Connected to bridge at %s", conn.Req.Target)
-				if err := buffConn.SetConn(phantomConn); err != nil {
+				if err := buffConn.SetConn(reset, phantomConn); err != nil {
 					log.Printf("Error setting internal conn: %s", err.Error())
 				}
 				return
@@ -97,6 +98,8 @@ func handler(conn *pt.SocksConn, config *conjure.ConjureConfig) error {
 			pt.Log(pt.LogSeverityNotice,
 				"retrying conjure registration, station is under high load.")
 			select {
+			case <-reset:
+				continue
 			case <-time.After(RetryInterval):
 				continue
 			case <-shutdown:
