@@ -22,6 +22,7 @@ import (
 )
 
 type ConjureConfig struct {
+	Registrar     string
 	RegisterURL   string // URL of the conjure bidirectional registration API endpoint
 	Fronts        []string
 	AMPCacheURL   string
@@ -140,19 +141,27 @@ func Register(config *ConjureConfig) (net.Conn, error) {
 		HTTPClient:    client,
 		STUNAddr:      config.STUNAddr,
 	}
-	if config.AMPCacheURL != "" {
+	switch config.Registrar {
+	case "ampcache":
+		if config.AMPCacheURL == "" {
+			log.Println("AMP Cache registrar selected with no AMP cache URL")
+			return nil, err
+		}
 		regConfig.Target = config.RegisterURL + "/amp/register-bidirectional" //Note: this goes in the HTTP request
 		regConfig.AMPCacheURL = config.AMPCacheURL
 		log.Println("Register through AMP cache at:", regConfig.Target)
 		registrar, err = registration.NewAMPCacheRegistrar(regConfig)
-	} else {
+	case "dns":
+		// TODO
+	case "bdapi":
+		fallthrough
+	default:
 		log.Println("Register through API with:", regConfig.Target)
 		registrar, err = registration.NewAPIRegistrar(regConfig)
 	}
 	if err != nil {
 		return nil, err
 	}
-
 	dialer.DarkDecoyRegistrar = registrar
 
 	// There are currently three available transports:
