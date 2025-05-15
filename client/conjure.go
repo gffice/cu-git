@@ -204,7 +204,7 @@ func main() {
 	log.SetOutput(logFile)
 
 	if *assetDir == "" {
-		*assetDir = stateDir + "/conjure"
+		*assetDir = stateDir + "conjure"
 		err := os.Mkdir(*assetDir, 0755)
 		if err != nil && !os.IsExist(err) {
 			log.Fatal(err)
