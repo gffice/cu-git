@@ -114,6 +114,8 @@ github.com/refraction-networking/conjure v0.7.11 h1:snX4pbaE6RPjEQEa6SOyvDJ+zZSl
 github.com/refraction-networking/conjure v0.7.11/go.mod h1:RkuBcC7pJOBFT78erDnM23sd2Uxygtt47h8jbcbyS10=
 github.com/refraction-networking/conjure v0.7.12-0.20250507182851-8676ab6282b8 h1:R791aFlIZQG/8M5nEPeNSKqpeOP4e4l6CzIWpZX3gp0=
 github.com/refraction-networking/conjure v0.7.12-0.20250507182851-8676ab6282b8/go.mod h1:LHOLcsHb+48BQkRynGa3vq3XkoTuqj+/pKcbhbY2vEM=
+github.com/refraction-networking/conjure v0.7.12-0.20250520170513-22f6cf9e6e66 h1:RClpkZwJSRhsgJz89t1QhNIaABVAggdCADF3a+tj9WU=
+github.com/refraction-networking/conjure v0.7.12-0.20250520170513-22f6cf9e6e66/go.mod h1:LHOLcsHb+48BQkRynGa3vq3XkoTuqj+/pKcbhbY2vEM=
 github.com/refraction-networking/ed25519 v0.1.2 h1:08kJZUkAlY7a7cZGosl1teGytV+QEoNxPO7NnRvAB+g=
 github.com/refraction-networking/ed25519 v0.1.2/go.mod h1:nxYLUAYt/hmNpAh64PNSQ/tQ9gTIB89wCaGKJlRtZ9I=
 github.com/refraction-networking/gotapdance v1.6.8 h1:Niv2zjJB3sxrvrM/vbp/q9W+Ch11rBJ08tMOrOLdbBQ=
