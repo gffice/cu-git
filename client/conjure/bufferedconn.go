@@ -12,25 +12,30 @@ import (
 const ConjureStalenessTimeout = 5 * time.Second
 
 type BufferedConn struct {
-	conn   net.Conn
-	buffer bytes.Buffer
-	lock   sync.Mutex
-	rp     *io.PipeReader
-	wp     *io.PipeWriter
-
-	lastReceive time.Time
+	conn     net.Conn
+	buffer   bytes.Buffer
+	lock     sync.Mutex
+	rp       *io.PipeReader
+	wp       *io.PipeWriter
+	once     sync.Once
+	received chan struct{}
 }
 
 func NewBufferedConn() *BufferedConn {
 
 	buffConn := new(BufferedConn)
 	buffConn.rp, buffConn.wp = io.Pipe()
+	buffConn.received = make(chan struct{})
 	return buffConn
 }
 
 func (c *BufferedConn) Read(b []byte) (int, error) {
-	c.lastReceive = time.Now()
-	return c.rp.Read(b)
+	n, err := c.rp.Read(b)
+	c.once.Do(func() {
+		log.Printf("Received data, connection is not stale")
+		close(c.received)
+	})
+	return n, err
 }
 
 func (c *BufferedConn) Write(b []byte) (int, error) {
@@ -48,7 +53,7 @@ func (c *BufferedConn) Write(b []byte) (int, error) {
 
 func (c *BufferedConn) Close() error {
 	if c.conn != nil {
-		c.conn.Close()
+		return c.conn.Close()
 	}
 	return nil
 }
@@ -88,20 +93,13 @@ func (c *BufferedConn) SetWriteDeadline(t time.Time) error {
 }
 
 func (c *BufferedConn) checkForStaleness(reset chan struct{}) {
-	c.lastReceive = time.Now()
-	for {
-		lastReceive := c.lastReceive
-		if time.Since(lastReceive) > ConjureStalenessTimeout {
-			log.Printf("Connection to the conjure station has timed out. Reset stale connection")
-			c.buffer.Reset()
-			close(reset)
-			return
-		}
-		select {
-		case <-reset:
-			return
-		case <-time.After(time.Second):
-		}
-
+	select {
+	case <-c.received:
+		return
+	case <-time.After(ConjureStalenessTimeout):
+		log.Printf("Connection to the conjure station has timed out. Reset stale connection")
+		c.buffer.Reset()
+		reset <- struct{}{}
 	}
+
 }
