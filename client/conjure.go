@@ -82,26 +82,31 @@ func handler(conn *pt.SocksConn, config *conjure.ConjureConfig) error {
 	}
 	buffConn := conjure.NewBufferedConn()
 	reset := make(chan struct{})
+	success := make(chan struct{})
 
 	go func() {
 		for {
 			phantomConn, err := conjure.Register(config)
 			if err == nil {
 				log.Printf("Connected to bridge at %s", conn.Req.Target)
-				if err := buffConn.SetConn(reset, phantomConn); err != nil {
+				if err := buffConn.SetConn(reset, success, phantomConn); err != nil {
 					log.Printf("Error setting internal conn: %s", err.Error())
+				} else {
+					log.Printf("Registration successful, checking for staleness. . .")
 				}
-				return
+			} else {
+				log.Printf("Error registering with station: %s", err.Error())
+				log.Printf("This may be due to high load, trying again.")
+				pt.Log(pt.LogSeverityNotice,
+					"retrying conjure registration, station is under high load.")
 			}
-			log.Printf("Error registering with station: %s", err.Error())
-			log.Printf("This may be due to high load, trying again.")
-			pt.Log(pt.LogSeverityNotice,
-				"retrying conjure registration, station is under high load.")
 			select {
-			case <-reset:
-				continue
 			case <-time.After(RetryInterval):
 				continue
+			case <-reset:
+				continue
+			case <-success:
+				return
 			case <-shutdown:
 				log.Println("Registration loop stopped")
 				return

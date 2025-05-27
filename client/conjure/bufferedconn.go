@@ -58,7 +58,7 @@ func (c *BufferedConn) Close() error {
 	return nil
 }
 
-func (c *BufferedConn) SetConn(reset chan struct{}, conn net.Conn) error {
+func (c *BufferedConn) SetConn(reset chan struct{}, success chan struct{}, conn net.Conn) error {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 	if c.buffer.Len() > 0 {
@@ -70,7 +70,7 @@ func (c *BufferedConn) SetConn(reset chan struct{}, conn net.Conn) error {
 			io.Copy(c.wp, conn)
 		}()
 		log.Printf("Flushed %d bytes from buffer", n)
-		go c.checkForStaleness(reset)
+		go c.checkForStaleness(reset, success)
 	}
 	c.conn = conn
 	return nil
@@ -92,13 +92,14 @@ func (c *BufferedConn) SetWriteDeadline(t time.Time) error {
 	return c.conn.SetWriteDeadline(t)
 }
 
-func (c *BufferedConn) checkForStaleness(reset chan struct{}) {
+func (c *BufferedConn) checkForStaleness(reset chan struct{}, success chan struct{}) {
 	select {
 	case <-c.received:
+		success <- struct{}{}
+		c.buffer.Reset()
 		return
 	case <-time.After(ConjureStalenessTimeout):
 		log.Printf("Connection to the conjure station has timed out. Reset stale connection")
-		c.buffer.Reset()
 		reset <- struct{}{}
 	}
 
