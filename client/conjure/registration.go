@@ -138,11 +138,11 @@ func Register(config *ConjureConfig) (net.Conn, error) {
 		MaxRetries:    0,
 		Bidirectional: true,
 		HTTPClient:    client,
+		STUNAddr:      config.STUNAddr,
 	}
 	if config.AMPCacheURL != "" {
 		regConfig.Target = config.RegisterURL + "/amp/register-bidirectional" //Note: this goes in the HTTP request
 		regConfig.AMPCacheURL = config.AMPCacheURL
-		regConfig.STUNAddr = config.STUNAddr
 		log.Println("Register through AMP cache at:", regConfig.Target)
 		registrar, err = registration.NewAMPCacheRegistrar(regConfig)
 	} else {
