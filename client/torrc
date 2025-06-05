@@ -1,0 +1,8 @@
+UseBridges 1
+DataDirectory datadir
+
+ClientTransportPlugin conjure exec ./client -log conjure.log -unsafe-logging
+
+Bridge conjure 143.110.214.222:80 50B99540A96C5E9F9F7704BAAE11DF01564711F4 url=https://registration.refraction.network transport=prefix
+
+SocksPort auto

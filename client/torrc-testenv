@@ -1,0 +1,8 @@
+UseBridges 1
+DataDirectory datadir
+
+ClientTransportPlugin conjure exec ./client -log conjure.log -unsafe-logging -registerURL http://192.168.2.2:8080
+
+Bridge conjure 192.168.122.3:8080
+
+SocksPort auto
