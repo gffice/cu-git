@@ -2,11 +2,11 @@ module gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/conjure
 
 go 1.22.0
 
-toolchain go1.24.3
+toolchain go1.24.4
 
 require (
 	github.com/pires/go-proxyproto v0.8.0
-	github.com/refraction-networking/conjure v0.7.12-0.20250520170513-22f6cf9e6e66
+	github.com/refraction-networking/conjure v0.7.12-0.20250601105028-354fc13ce51e
 	github.com/refraction-networking/gotapdance v1.7.10
 	github.com/refraction-networking/utls v1.6.7
 	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/goptlib v1.6.0
