@@ -28,6 +28,9 @@ const RetryInterval = 10 * time.Second
 // Get SOCKS arguments and populate config
 func getSOCKSArgs(conn *pt.SocksConn, config *conjure.ConjureConfig) {
 	// Check to see if our command line options are overriden by SOCKS options
+	if arg, ok := conn.Req.Args.Get("registrar"); ok {
+		config.Registrar = arg
+	}
 	if arg, ok := conn.Req.Args.Get("ampcache"); ok {
 		config.AMPCacheURL = arg
 	}
@@ -172,7 +175,8 @@ func main() {
 		"resolve the log file relative to tor's pt state dir")
 	unsafeLogging := flag.Bool("unsafe-logging", false, "prevent logs from being scrubbed")
 	frontDomainsCommas := flag.String("fronts", "", "comma-separated list of front domains")
-	ampCacheURL := flag.String("ampcache", "", "URL of AMP cache to use as a proxy for signaling")
+	registrar := flag.String("registrar", "bdapi", "One of bdapi, ampcache, dns")
+	ampCacheURL := flag.String("ampcache", "", "URL of AMP cache to use as a proxy for signaling, must set registrar to ampcache")
 	registerURL := flag.String("registerURL", "", "URL of the conjure registration station")
 	uTLSClientHelloID := flag.String("utls-imitate", "", "type of TLS client to imitate with utls")
 	uTLSRemoveSNI := flag.Bool("utls-nosni", false, "remove SNI from client hello(ignored if uTLS is not used)")
@@ -224,6 +228,7 @@ func main() {
 
 	// Configure Conjure
 	config := &conjure.ConjureConfig{
+		Registrar:     *registrar,
 		RegisterURL:   *registerURL,
 		Fronts:        frontDomains,
 		AMPCacheURL:   *ampCacheURL,

@@ -3,6 +3,7 @@ package conjure
 import (
 	"context"
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"log"
 	"math/rand"
@@ -10,9 +11,11 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/refraction-networking/conjure/pkg/client/assets"
 	"github.com/refraction-networking/conjure/pkg/registrars/registration"
 	transports "github.com/refraction-networking/conjure/pkg/transports/client"
 	"github.com/refraction-networking/conjure/proto"
+	pb "github.com/refraction-networking/conjure/proto"
 	"github.com/refraction-networking/gotapdance/tapdance"
 	utls "github.com/refraction-networking/utls"
 
@@ -22,6 +25,7 @@ import (
 )
 
 type ConjureConfig struct {
+	Registrar     string
 	RegisterURL   string // URL of the conjure bidirectional registration API endpoint
 	Fronts        []string
 	AMPCacheURL   string
@@ -132,27 +136,62 @@ func Register(config *ConjureConfig) (net.Conn, error) {
 	// registration and ampcache registration processes. Different censorship resistant
 	// transport methods can be used to tunnel the HTTP requests, such as domain fronting
 	regConfig := &registration.Config{
-		Target: config.RegisterURL + "/api/register-bidirectional", //Note: this goes in the HTTP request
-		// TODO: reach out and ask what a reasonable value to set this to is
-		Delay:         time.Second,
-		MaxRetries:    0,
 		Bidirectional: true,
 		HTTPClient:    client,
 		STUNAddr:      config.STUNAddr,
 	}
-	if config.AMPCacheURL != "" {
+	switch config.Registrar {
+	case "ampcache":
+		if config.AMPCacheURL == "" {
+			log.Println("AMP Cache registrar selected with no AMP cache URL")
+			return nil, err
+		}
 		regConfig.Target = config.RegisterURL + "/amp/register-bidirectional" //Note: this goes in the HTTP request
 		regConfig.AMPCacheURL = config.AMPCacheURL
+		regConfig.MaxRetries = 0
+		regConfig.HTTPClient = client
 		log.Println("Register through AMP cache at:", regConfig.Target)
 		registrar, err = registration.NewAMPCacheRegistrar(regConfig)
-	} else {
+	case "dns":
+		dnsConf := assets.Assets().GetDNSRegConf()
+		pubkey := dnsConf.Pubkey
+		if pubkey == nil {
+			pubkey = assets.Assets().GetConjurePubkey()[:]
+		}
+		regConfig.Pubkey = dnsConf.Pubkey
+		var method registration.DNSTransportMethodType
+		switch *dnsConf.DnsRegMethod {
+		case pb.DnsRegMethod_UDP:
+			method = registration.UDP
+		case pb.DnsRegMethod_DOT:
+			regConfig.UTLSDistribution = *dnsConf.UtlsDistribution
+			method = registration.DoT
+		case pb.DnsRegMethod_DOH:
+			regConfig.UTLSDistribution = *dnsConf.UtlsDistribution
+			method = registration.DoH
+		default:
+			return nil, errors.New("unknown reg method in conf")
+		}
+		regConfig.DNSTransportMethod = method
+		regConfig.Target = *dnsConf.Target
+		regConfig.BaseDomain = *dnsConf.Domain
+		regConfig.Pubkey = pubkey
+		regConfig.MaxRetries = 3
+		regConfig.STUNAddr = *dnsConf.StunServer
+		log.Println("Register through DNS at:", regConfig.Target)
+		registrar, err = registration.NewDNSRegistrar(regConfig)
+	case "bdapi":
+		fallthrough
+	default:
 		log.Println("Register through API with:", regConfig.Target)
+		regConfig.Target = config.RegisterURL + "/api/register-bidirectional" //Note: this goes in the HTTP request
+		regConfig.MaxRetries = 0
+		regConfig.HTTPClient = client
 		registrar, err = registration.NewAPIRegistrar(regConfig)
 	}
 	if err != nil {
 		return nil, err
 	}
-
 	dialer.DarkDecoyRegistrar = registrar
 
 	// There are currently three available transports:
